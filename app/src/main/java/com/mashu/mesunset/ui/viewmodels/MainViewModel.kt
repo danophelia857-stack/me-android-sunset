@@ -44,6 +44,18 @@ class MainViewModel(private val repository: MESunsetRepository) : ViewModel() {
         }
     }
     
+    fun requestOtp(msisdn: String) {
+        viewModelScope.launch {
+            _uiState.value = UiState.Loading
+            val result = repository.requestOtp(msisdn)
+            result.onSuccess { message ->
+                _uiState.value = UiState.Success(message)
+            }.onFailure { error ->
+                _uiState.value = UiState.Error("Request OTP gagal: ${error.message}")
+            }
+        }
+    }
+    
     fun login(msisdn: String, otp: String) {
         viewModelScope.launch {
             _uiState.value = UiState.Loading

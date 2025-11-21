@@ -70,6 +70,36 @@ class MESunsetRepository(context: Context) {
         }
     }
     
+    // Request OTP
+    suspend fun requestOtp(msisdn: String): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val request = OtpRequest(
+                contact = msisdn,
+                contactType = "MSISDN",
+                grantType = "password"
+            )
+            
+            val response = apiService.requestOtp(
+                basicAuth = "Basic ${Constants.BASIC_AUTH}",
+                userAgent = Constants.UA,
+                request = request
+            )
+            
+            if (response.isSuccessful && response.body() != null) {
+                val otpResponse = response.body()!!
+                if (otpResponse.success) {
+                    Result.success("OTP berhasil dikirim ke ${msisdn}")
+                } else {
+                    Result.failure(Exception(otpResponse.message))
+                }
+            } else {
+                Result.failure(Exception("Request OTP gagal: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
     // Login
     suspend fun login(msisdn: String, otp: String): Result<User> = withContext(Dispatchers.IO) {
         try {

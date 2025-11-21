@@ -1,5 +1,6 @@
 package com.mashu.mesunset.data.models
 
+import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -58,11 +59,11 @@ data class LoginRequest(
 
 @Serializable
 data class LoginResponse(
-    val idToken: String,
-    val accessToken: String,
-    val refreshToken: String,
-    val subscriberId: String,
-    val subscriptionType: String
+    @SerializedName("id_token") val idToken: String,
+    @SerializedName("access_token") val accessToken: String,
+    @SerializedName("refresh_token") val refreshToken: String,
+    @SerializedName("subscriber_id") val subscriberId: String,
+    @SerializedName("subscription_type") val subscriptionType: String
 )
 
 @Serializable
@@ -119,4 +120,18 @@ data class Bookmark(
     val optionCode: String,
     val packageName: String,
     val addedAt: Long
+)
+
+@Serializable
+data class OtpRequest(
+    val contact: String,
+    @SerializedName("contact_type") val contactType: String = "MSISDN",
+    @SerializedName("grant_type") val grantType: String = "password"
+)
+
+@Serializable
+data class OtpResponse(
+    val success: Boolean,
+    val message: String,
+    @SerializedName("request_id") val requestId: String?
 )

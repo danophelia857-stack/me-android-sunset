@@ -6,6 +6,13 @@ import retrofit2.http.*
 
 interface ApiService {
     
+    @POST("api/v1/auth/otp/request")
+    suspend fun requestOtp(
+        @Header("Authorization") basicAuth: String,
+        @Header("User-Agent") userAgent: String,
+        @Body request: OtpRequest
+    ): Response<OtpResponse>
+    
     @POST("api/v1/auth/login")
     suspend fun login(
         @Header("Authorization") basicAuth: String,
