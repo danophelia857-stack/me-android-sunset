@@ -31,5 +31,12 @@ object RetrofitClient {
         .addConverterFactory(GsonConverterFactory.create(gson))
         .build()
     
+    private val ciamRetrofit = Retrofit.Builder()
+        .baseUrl(Constants.BASE_CIAM_URL)
+        .client(okHttpClient)
+        .addConverterFactory(GsonConverterFactory.create(gson))
+        .build()
+    
     val apiService: ApiService = retrofit.create(ApiService::class.java)
+    val ciamApiService: CiamApiService = ciamRetrofit.create(CiamApiService::class.java)
 }

@@ -128,3 +128,40 @@ data class Bookmark(
     val packageName: String,
     val addedAt: Long
 )
+
+// CIAM API models
+data class CiamOtpResponse(
+    @SerializedName("subscriber_id")
+    val subscriberId: String? = null,
+    val error: String? = null,
+    @SerializedName("error_description")
+    val errorDescription: String? = null
+)
+
+data class CiamTokenResponse(
+    @SerializedName("access_token")
+    val accessToken: String? = null,
+    @SerializedName("refresh_token")
+    val refreshToken: String? = null,
+    @SerializedName("id_token")
+    val idToken: String? = null,
+    @SerializedName("token_type")
+    val tokenType: String? = null,
+    @SerializedName("expires_in")
+    val expiresIn: Int? = null,
+    val error: String? = null,
+    @SerializedName("error_description")
+    val errorDescription: String? = null
+)
+
+data class CiamExtendSessionResponse(
+    val data: CiamExtendSessionData? = null,
+    val error: String? = null,
+    @SerializedName("error_description")
+    val errorDescription: String? = null
+)
+
+data class CiamExtendSessionData(
+    @SerializedName("exchange_code")
+    val exchangeCode: String
+)
