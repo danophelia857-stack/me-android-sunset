@@ -5,6 +5,125 @@ All notable changes to ME Android Sunset will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-11-21
+
+### Added
+
+#### New Features
+- **OTP Request Feature**: Users can now request OTP directly from the app
+  - "Minta OTP" button on login screen
+  - No need to get OTP from external sources
+  - "Kirim Ulang OTP" option if OTP not received
+- **Improved Login Flow**: Better UX with clear step-by-step process
+  - Step 1: Enter phone number → Request OTP
+  - Step 2: Enter OTP → Login
+  - Option to skip to login if already have OTP
+
+#### API Enhancements
+- Added `requestOtp()` endpoint in ApiService
+- Added `OtpRequest` and `OtpResponse` data models
+- Added OTP request functionality in Repository layer
+
+#### UI Improvements
+- Enhanced LoginScreen with conditional rendering
+- Added success/error feedback cards
+- Better loading states with CircularProgressIndicator
+- "Kembali" button to go back to phone number entry
+- Improved button states and validation
+
+### Fixed
+
+#### Critical Bug Fixes
+- **Fixed Gson Serialization Error**: `java.lang.Class cannot be cast to java.lang.reflect.ParameterizedType`
+  - Added proper `@SerializedName` annotations to LoginResponse
+  - Fixed JSON field mapping (snake_case to camelCase)
+  - Proper Gson configuration in RetrofitClient
+
+#### Login Issues
+- Fixed login failure due to incorrect JSON parsing
+- Fixed token deserialization issues
+- Improved error handling and messages
+
+### Changed
+
+#### Code Improvements
+- Refactored LoginScreen for better maintainability
+- Enhanced error messages for better user feedback
+- Improved state management in ViewModel
+- Better separation of concerns in Repository
+
+#### UX Enhancements
+- More intuitive login flow
+- Clear feedback on OTP request success/failure
+- Better button labels and descriptions
+- Improved accessibility
+
+### Technical Details
+
+#### Models Updated
+```kotlin
+@Serializable
+data class LoginResponse(
+    @SerializedName("id_token") val idToken: String,
+    @SerializedName("access_token") val accessToken: String,
+    @SerializedName("refresh_token") val refreshToken: String,
+    @SerializedName("subscriber_id") val subscriberId: String,
+    @SerializedName("subscription_type") val subscriptionType: String
+)
+
+@Serializable
+data class OtpRequest(
+    val contact: String,
+    @SerializedName("contact_type") val contactType: String = "MSISDN",
+    @SerializedName("grant_type") val grantType: String = "password"
+)
+
+@Serializable
+data class OtpResponse(
+    val success: Boolean,
+    val message: String,
+    @SerializedName("request_id") val requestId: String?
+)
+```
+
+#### Repository Method
+```kotlin
+suspend fun requestOtp(msisdn: String): Result<String>
+```
+
+#### ViewModel Method
+```kotlin
+fun requestOtp(msisdn: String)
+```
+
+### Migration Guide
+
+#### For Users
+1. **Download new APK** from GitHub Releases
+2. **Uninstall old version** (if installed)
+3. **Install new version**
+4. **Login with new flow**:
+   - Enter phone number
+   - Tap "Minta OTP"
+   - Wait for OTP via SMS
+   - Enter OTP
+   - Tap "Login"
+
+#### For Developers
+No breaking changes. All existing functionality preserved.
+
+### Known Issues
+
+None reported in this version.
+
+### Performance
+
+- Same performance as v1.0.0
+- No additional overhead from OTP feature
+- Efficient state management
+
+---
+
 ## [1.0.0] - 2025-11-21
 
 ### Added
@@ -158,59 +277,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Internet connection required for API calls
 - No offline mode for package browsing
 
-### Future Roadmap
-
-#### Planned Features (v1.1.0)
-- [ ] Package search with filters
-- [ ] Advanced bookmark management
-- [ ] Push notifications for package expiry
-- [ ] Widget for quick balance check
-- [ ] Export transaction history
-- [ ] Multiple language support
-
-#### Planned Features (v1.2.0)
-- [ ] Biometric authentication
-- [ ] Package recommendation engine
-- [ ] Usage statistics and charts
-- [ ] Auto-renewal for packages
-- [ ] Referral system
-- [ ] In-app chat support
-
-#### Long-term Goals
-- [ ] Play Store distribution
-- [ ] Automatic updates
-- [ ] Offline package catalog
-- [ ] Advanced analytics
-- [ ] Integration with other services
-
-### Migration Guide
-
-This is the initial release, no migration needed.
-
-### Breaking Changes
-
-None (initial release).
-
-### Deprecations
-
-None (initial release).
-
-### Security Fixes
-
-None (initial release).
-
-### Performance Improvements
-
-- Optimized encryption algorithms
-- Efficient state management with StateFlow
-- Lazy loading for package lists
-- Image caching for package icons
-- Minimal APK size (~5MB)
-
-### Bug Fixes
-
-None (initial release).
-
 ### Contributors
 
 - **Initial Development**: Full-stack implementation of Android app
@@ -249,4 +315,5 @@ We follow [Semantic Versioning](https://semver.org/):
 
 ---
 
+[1.1.0]: https://github.com/danophelia857-stack/me-android-sunset/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/danophelia857-stack/me-android-sunset/releases/tag/v1.0.0
