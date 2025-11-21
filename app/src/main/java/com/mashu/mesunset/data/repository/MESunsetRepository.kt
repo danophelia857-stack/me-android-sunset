@@ -265,8 +265,7 @@ class MESunsetRepository(context: Context) {
             Result.failure(Exception("Get packages error: ${e.message ?: e.javaClass.simpleName}"))
         }
     }
-}
-
+    
     // Get tiering info
     suspend fun getTieringInfo(user: User): Result<TieringInfo> = withContext(Dispatchers.IO) {
         try {
