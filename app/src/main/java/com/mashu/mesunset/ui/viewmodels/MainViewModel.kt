@@ -128,17 +128,11 @@ class MainViewModel(private val repository: MESunsetRepository) : ViewModel() {
     }
     
     fun logout() {
-        _currentUser.value?.let { user ->
-            repository.removeUser(user.number)
-        }
+        repository.clearActiveUser()
         _currentUser.value = null
         _profile.value = null
         _balance.value = null
         _tieringInfo.value = null
-        _uiState.value = UiState.Idle
-    }
-    
-    fun resetUiState() {
         _uiState.value = UiState.Idle
     }
 }

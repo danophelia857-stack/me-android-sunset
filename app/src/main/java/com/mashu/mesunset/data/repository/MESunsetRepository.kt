@@ -137,7 +137,7 @@ class MESunsetRepository(context: Context) {
             val response = apiService.login(
                 basicAuth = "Basic ${Constants.BASIC_AUTH}",
                 userAgent = Constants.UA,
-                xApiKey = Constants.API_KEY,
+                xApiKey = Constants.AX_FP_KEY,
                 xApiSignature = signature,
                 xApiTimestamp = tsForSign,
                 request = encryptedRequest
@@ -200,7 +200,7 @@ class MESunsetRepository(context: Context) {
             val response = apiService.getBalance(
                 authorization = "Bearer ${user.tokens.accessToken}",
                 userAgent = Constants.UA,
-                xApiKey = Constants.API_KEY,
+                xApiKey = Constants.AX_FP_KEY,
                 xApiSignature = signature,
                 xApiTimestamp = tsForSign
             )
@@ -238,7 +238,7 @@ class MESunsetRepository(context: Context) {
             val response = apiService.getPackages(
                 authorization = "Bearer ${user.tokens.accessToken}",
                 userAgent = Constants.UA,
-                xApiKey = Constants.API_KEY,
+                xApiKey = Constants.AX_FP_KEY,
                 xApiSignature = signature,
                 xApiTimestamp = tsForSign
             )
@@ -263,6 +263,45 @@ class MESunsetRepository(context: Context) {
         } catch (e: Exception) {
             e.printStackTrace()
             Result.failure(Exception("Get packages error: ${e.message ?: e.javaClass.simpleName}"))
+        }
+    }
+}
+
+    // Get tiering info
+    suspend fun getTieringInfo(user: User): Result<TieringInfo> = withContext(Dispatchers.IO) {
+        try {
+            val timestamp = System.currentTimeMillis()
+            val tsForSign = timestamp.toString()
+            
+            val signature = CryptoHelper.generateXApiSignature(tsForSign)
+            
+            val response = apiService.getTieringInfo(
+                bearerToken = "Bearer ${user.tokens.accessToken}",
+                signature = signature,
+                userAgent = Constants.UA,
+                apiKey = Constants.AX_FP_KEY,
+                encryptedRequest = EncryptedRequest("", timestamp)
+            )
+            
+            if (response.isSuccessful) {
+                val encryptedResponse = response.body()
+                if (encryptedResponse != null) {
+                    val decryptedJson = CryptoHelper.decryptXData(
+                        encryptedResponse.xdata,
+                        encryptedResponse.xtime
+                    )
+                    val tieringInfo = gson.fromJson(decryptedJson, TieringInfo::class.java)
+                    Result.success(tieringInfo)
+                } else {
+                    Result.failure(Exception("Response body is null"))
+                }
+            } else {
+                val errorBody = response.errorBody()?.string() ?: response.message()
+                Result.failure(Exception("HTTP ${response.code()}: $errorBody"))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Result.failure(Exception("Get tiering info error: ${e.message ?: e.javaClass.simpleName}"))
         }
     }
 }

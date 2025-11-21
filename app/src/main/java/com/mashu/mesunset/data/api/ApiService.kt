@@ -16,18 +16,20 @@ interface ApiService {
     @POST("api/v1/auth/login")
     suspend fun login(
         @Header("Authorization") basicAuth: String,
-        @Header("X-Signature") signature: String,
         @Header("User-Agent") userAgent: String,
-        @Body request: LoginRequest
-    ): Response<LoginResponse>
+        @Header("x-api-key") xApiKey: String,
+        @Header("x-api-signature") xApiSignature: String,
+        @Header("x-api-timestamp") xApiTimestamp: String,
+        @Body request: EncryptedRequest
+    ): Response<EncryptedResponse>
     
     @POST("api/v8/balance")
     suspend fun getBalance(
-        @Header("Authorization") bearerToken: String,
-        @Header("X-Signature") signature: String,
+        @Header("Authorization") authorization: String,
         @Header("User-Agent") userAgent: String,
-        @Header("x-api-key") apiKey: String,
-        @Body encryptedRequest: EncryptedRequest
+        @Header("x-api-key") xApiKey: String,
+        @Header("x-api-signature") xApiSignature: String,
+        @Header("x-api-timestamp") xApiTimestamp: String
     ): Response<EncryptedResponse>
     
     @POST("api/v8/tiering/info")
@@ -39,13 +41,13 @@ interface ApiService {
         @Body encryptedRequest: EncryptedRequest
     ): Response<EncryptedResponse>
     
-    @POST("api/v8/packages/my")
-    suspend fun getMyPackages(
-        @Header("Authorization") bearerToken: String,
-        @Header("X-Signature") signature: String,
+    @POST("api/v8/packages/hot")
+    suspend fun getPackages(
+        @Header("Authorization") authorization: String,
         @Header("User-Agent") userAgent: String,
-        @Header("x-api-key") apiKey: String,
-        @Body encryptedRequest: EncryptedRequest
+        @Header("x-api-key") xApiKey: String,
+        @Header("x-api-signature") xApiSignature: String,
+        @Header("x-api-timestamp") xApiTimestamp: String
     ): Response<EncryptedResponse>
     
     @POST("api/v8/packages/detail")

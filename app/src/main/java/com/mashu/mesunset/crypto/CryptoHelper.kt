@@ -214,6 +214,15 @@ object CryptoHelper {
     }
     
     /**
+     * Generate X-API-Signature for general API calls
+     */
+    fun generateXApiSignature(timestamp: String): String {
+        val preimage = "${timestamp}${AX_API_SIG_KEY}"
+        val digest = hmacSha256Bytes(AX_API_SIG_KEY, preimage)
+        return Base64.encodeToString(digest, Base64.NO_WRAP)
+    }
+    
+    /**
      * Build encrypted field
      */
     fun buildEncryptedField(ivHex16: String? = null, urlsafeB64: Boolean = false): String {
