@@ -219,78 +219,38 @@ class MESunsetRepository(context: Context) {
         }
     }
     
-    // Get profile
-    suspend fun getProfile(user: User): Result<Profile> = withContext(Dispatchers.IO) {
-        try {
-            val timestamp = System.currentTimeMillis()
-            val sigTimeSec = timestamp / 1000
-            
-            // Create payload
-            val payload = mapOf(
-                "access_token" to user.tokens.accessToken,
-                "app_version" to "8.9.0",
-                "is_enterprise" to false,
-                "lang" to "en"
-            )
-            
-            // Encrypt payload
-            val plaintext = gson.toJson(payload)
-            val xdata = CryptoHelper.encryptXData(plaintext, timestamp)
-            val encryptedRequest = EncryptedRequest(xdata, timestamp)
-            
-            // Generate X-Signature
-            val xSignature = CryptoHelper.makeXSignature(
-                idToken = user.tokens.idToken,
-                method = "POST",
-                path = "api/v8/profile",
-                sigTimeSec = sigTimeSec
-            )
-            
-            // Generate headers
-            val xRequestAt = CryptoHelper.generateJavaLikeTimestamp()
-            val xRequestId = CryptoHelper.generateUuid()
-            
-            // Call API (need to add this endpoint to ApiService)
-            // For now, return a dummy result
-            Result.failure(Exception("Get profile not yet implemented"))
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Result.failure(Exception("Get profile error: ${e.message ?: e.javaClass.simpleName}"))
-        }
-    }
-    
     // Get balance
     suspend fun getBalance(user: User): Result<Balance> = withContext(Dispatchers.IO) {
         try {
             val timestamp = System.currentTimeMillis()
-            val sigTimeSec = timestamp / 1000
+            val tsForSign = timestamp.toString()
             
-            // Create payload
-            val payload = mapOf(
-                "is_enterprise" to false,
-                "lang" to "en"
+            val signature = CryptoHelper.generateXApiSignature(tsForSign)
+            
+            val response = apiService.getBalance(
+                authorization = "Bearer ${user.tokens.accessToken}",
+                userAgent = Constants.UA,
+                xApiKey = Constants.AX_FP_KEY,
+                xApiSignature = signature,
+                xApiTimestamp = tsForSign
             )
             
-            // Encrypt payload
-            val plaintext = gson.toJson(payload)
-            val xdata = CryptoHelper.encryptXData(plaintext, timestamp)
-            val encryptedRequest = EncryptedRequest(xdata, timestamp)
-            
-            // Generate X-Signature
-            val xSignature = CryptoHelper.makeXSignature(
-                idToken = user.tokens.idToken,
-                method = "POST",
-                path = "api/v8/packages/balance-and-credit",
-                sigTimeSec = sigTimeSec
-            )
-            
-            // Generate headers
-            val xRequestAt = CryptoHelper.generateJavaLikeTimestamp()
-            val xRequestId = CryptoHelper.generateUuid()
-            
-            // Call API (need to update endpoint)
-            // For now, return a dummy result
-            Result.failure(Exception("Get balance not yet fully implemented"))
+            if (response.isSuccessful) {
+                val encryptedResponse = response.body()
+                if (encryptedResponse != null) {
+                    val decryptedJson = CryptoHelper.decryptXData(
+                        encryptedResponse.xdata,
+                        encryptedResponse.xtime
+                    )
+                    val balance = gson.fromJson(decryptedJson, Balance::class.java)
+                    Result.success(balance)
+                } else {
+                    Result.failure(Exception("Response body is null"))
+                }
+            } else {
+                val errorBody = response.errorBody()?.string() ?: response.message()
+                Result.failure(Exception("HTTP ${response.code()}: $errorBody"))
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             Result.failure(Exception("Get balance error: ${e.message ?: e.javaClass.simpleName}"))
