@@ -56,6 +56,10 @@ class MainViewModel(private val repository: MESunsetRepository) : ViewModel() {
         }
     }
     
+    fun resetUiState() {
+        _uiState.value = UiState.Idle
+    }
+    
     fun login(msisdn: String, otp: String) {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
