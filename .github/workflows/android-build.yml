@@ -1,0 +1,83 @@
+name: Android CI/CD
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+        
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Build with Gradle
+      run: ./gradlew build
+      
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug
+      
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
+      
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug
+        path: app/build/outputs/apk/debug/app-debug.apk
+        
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release
+        path: app/build/outputs/apk/release/app-release.apk
+        
+    - name: Create Release
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ github.run_number }}
+        name: Release v${{ github.run_number }}
+        body: |
+          ## ME Android Sunset - Build ${{ github.run_number }}
+          
+          ### Features:
+          - 🔐 Full offline encryption (AES-256)
+          - 📱 Native Android app with Material 3 design
+          - 🚀 No external server dependencies
+          - 💳 Package purchase and management
+          - 📊 Balance and transaction history
+          - 👥 Family plan and Circle support
+          
+          ### Download:
+          - **app-debug.apk**: For testing and development
+          - **app-release.apk**: Production-ready build
+          
+          ### Installation:
+          1. Download the APK file
+          2. Enable "Install from Unknown Sources" in Android settings
+          3. Install the APK
+          4. Login with your credentials
+          
+          Built with ❤️ using Kotlin & Jetpack Compose
+        files: |
+          app/build/outputs/apk/debug/app-debug.apk
+          app/build/outputs/apk/release/app-release.apk
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
